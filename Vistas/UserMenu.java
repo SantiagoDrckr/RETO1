@@ -5,11 +5,27 @@
  */
 package Vistas;
 
+import modelo.Conexion;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import javax.swing.table.DefaultTableModel;
+
 /**
  *
  * @author ansab
  */
 public class UserMenu extends javax.swing.JFrame {
+
+    //instancia conexion tabla
+    Conexion conexion = new Conexion();
+    Connection connetion;
+    //Statement permite ejecutar SQL
+    Statement st;
+    ResultSet rs;
+    //crear instancia de la tabla de la interfaz
+    DefaultTableModel contenidoTablaEmpleados;
 
     /**
      * Creates new form UserMenu
@@ -17,6 +33,50 @@ public class UserMenu extends javax.swing.JFrame {
     public UserMenu() {
         initComponents();
         setLocationRelativeTo(null);
+        listarEmpleados();
+    }
+// metodo que trae a todos los empleados exitentes de la base de datos
+
+    private void listarEmpleados() {
+        String queryConsulta = "SELECT * FROM  empleados";
+        // intentar ejecutar query de la base de datos
+        try {
+            connetion = conexion.getConnetion();
+            st = connetion.createStatement();
+            rs = st.executeQuery(queryConsulta);
+            // crear un objeto donde se guarde resultado de la consulta
+            Object[] empleados = new Object[5];
+            //actualizar la propiedad model de la tabla
+            contenidoTablaEmpleados = (DefaultTableModel) tblEmpleados.getModel();
+            //recorrer resultado de la consulta del query
+            while (rs.next()) {
+                empleados[0] = rs.getInt("idEmp");
+                empleados[1] = rs.getString("NOMBREeMO") + " " + rs.getString("apellidos");
+                empleados[2] = rs.getString("tipoDocumento");
+                empleados[3] = rs.getString("documento");
+                empleados[4] = rs.getString("correo");
+                // creamos una fila dentro de la tabla por cada empleado
+                contenidoTablaEmpleados.addRow(empleados);
+                System.out.println("id: " + empleados[0] + ", nombre: " + empleados[1] + ", documento: " + empleados[2] + " " + empleados[3] + ",correo: " + empleados[4]);
+                tblEmpleados.setModel(contenidoTablaEmpleados);
+            }
+        } catch (SQLException e) {
+            System.out.println("Error");
+
+        }
+    }
+    
+    //cuando añado un nuevo empleado el proceso background es el siguiente:
+    //1 alamacena new
+    //2 eliminar datos
+    //3 llamar la tabla para ver db de la tabla
+    //4New tabla con el personaje recien creado
+    private void  borrarDatosTabla(){
+        for (int i = 0; i < tblEmpleados.getRowCount(); i++){
+            contenidoTablaEmpleados.removeRow(i);
+            i = i -1;
+            
+        }
     }
 
     /**
@@ -33,7 +93,7 @@ public class UserMenu extends javax.swing.JFrame {
         jPanel2 = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        tblEmpleados = new javax.swing.JTable();
         jButton1 = new javax.swing.JButton();
         btnAddUser = new javax.swing.JButton();
         jButton3 = new javax.swing.JButton();
@@ -50,8 +110,8 @@ public class UserMenu extends javax.swing.JFrame {
 
         jPanel3.setBackground(new java.awt.Color(204, 204, 204));
 
-        jTable1.setForeground(new java.awt.Color(204, 204, 204));
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        tblEmpleados.setForeground(new java.awt.Color(0, 0, 0));
+        tblEmpleados.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
             },
@@ -67,13 +127,13 @@ public class UserMenu extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
-        jScrollPane1.setViewportView(jTable1);
+        jScrollPane1.setViewportView(tblEmpleados);
 
         jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/showUser.png"))); // NOI18N
         jButton1.setText("Consultar");
 
         btnAddUser.setIcon(new javax.swing.ImageIcon(getClass().getResource("/assets/avatar.png"))); // NOI18N
-        btnAddUser.setText("Añadir");
+        btnAddUser.setText("Crear empleado");
         btnAddUser.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnAddUserActionPerformed(evt);
@@ -97,24 +157,24 @@ public class UserMenu extends javax.swing.JFrame {
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
-                .addComponent(jLabel2)
-                .addGap(219, 219, 219)
-                .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(btnAddUser)
-                .addGap(22, 22, 22))
-            .addGroup(jPanel3Layout.createSequentialGroup()
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addGap(328, 328, 328)
-                        .addComponent(jButton1)
-                        .addGap(18, 18, 18)
-                        .addComponent(jButton4)
-                        .addGap(18, 18, 18)
-                        .addComponent(jButton3))
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addGap(21, 21, 21)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 962, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(jLabel2)
+                        .addGap(219, 219, 219)
+                        .addComponent(jLabel1)
+                        .addGap(277, 277, 277)
+                        .addComponent(btnAddUser))
+                    .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(jPanel3Layout.createSequentialGroup()
+                            .addGap(328, 328, 328)
+                            .addComponent(jButton1)
+                            .addGap(18, 18, 18)
+                            .addComponent(jButton4)
+                            .addGap(18, 18, 18)
+                            .addComponent(jButton3))
+                        .addGroup(jPanel3Layout.createSequentialGroup()
+                            .addGap(21, 21, 21)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 962, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap(34, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
@@ -123,11 +183,11 @@ public class UserMenu extends javax.swing.JFrame {
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 88, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addGap(58, 58, 58)
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(btnAddUser, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel1))))
-                .addGap(3, 3, 3)
+                        .addGap(48, 48, 48)
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel1)
+                            .addComponent(btnAddUser, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                .addGap(10, 10, 10)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 243, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -172,9 +232,12 @@ public class UserMenu extends javax.swing.JFrame {
 
     private void btnAddUserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddUserActionPerformed
         // crear instancia del dialogo
-        AddUserForm addUserF = new AddUserForm(this, rootPaneCheckingEnabled);
-        addUserF.setVisible(rootPaneCheckingEnabled);
+        AddUserForm addUserF = new AddUserForm(this, true);
+        addUserF.setVisible(true);
+        borrarDatosTabla();
+        listarEmpleados();
         
+
     }//GEN-LAST:event_btnAddUserActionPerformed
 
     /**
@@ -224,6 +287,6 @@ public class UserMenu extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTabbedPane jTabbedPane8;
-    private javax.swing.JTable jTable1;
+    private javax.swing.JTable tblEmpleados;
     // End of variables declaration//GEN-END:variables
 }
